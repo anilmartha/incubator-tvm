@@ -39,7 +39,15 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 # Get the command line arguments.
 CONTAINER_TYPE=$( echo "$1" | tr '[:upper:]' '[:lower:]' )
-shift 1
+#shift 1
+
+VERSION=$2
+
+if [ "$#" -gt  2 ] ; then
+    shift 2
+else
+    shift 1
+fi
 
 # Dockerfile to be used in docker build
 DOCKERFILE_PATH="${SCRIPT_DIR}/Dockerfile.${CONTAINER_TYPE}"
@@ -132,12 +140,14 @@ echo "COMMAND: ${COMMAND[@]}"
 echo "CONTAINER_TYPE: ${CONTAINER_TYPE}"
 echo "BUILD_TAG: ${BUILD_TAG}"
 echo "DOCKER CONTAINER NAME: ${DOCKER_IMG_NAME}"
+echo "VERSION: ${VERSION}"
 echo ""
 
 
 # Build the docker container.
 echo "Building container (${DOCKER_IMG_NAME})..."
-docker build -t ${DOCKER_IMG_NAME} \
+
+docker build --build-arg VERSION=$VERSION  -t ${DOCKER_IMG_NAME} \
     -f "${DOCKERFILE_PATH}" \
     ${CI_DOCKER_BUILD_EXTRA_PARAMS[@]} \
     "${DOCKER_CONTEXT_PATH}"
