@@ -16,7 +16,8 @@
 # under the License.
 
 # CI docker VAI env
-FROM xilinx/vitis-ai:latest
+ARG  VERSION=dev_latest
+FROM xdock.xilinx.com/vitis-ai-cpu:$VERSION
 
 RUN apt-get update --fix-missing
 
