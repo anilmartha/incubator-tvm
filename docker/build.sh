@@ -20,11 +20,15 @@
 #
 # Execute command within a docker container
 #
-# Usage: build.sh <CONTAINER_TYPE> [--dockerfile <DOCKERFILE_PATH>] [-it]
+# Usage: build.sh <CONTAINER_TYPE> <BASE_IMAGE> <VERSION>  [--dockerfile <DOCKERFILE_PATH>] [-it]
 #                [--net=host] [--cache-from <IMAGE_NAME>] <COMMAND>
 #
 # CONTAINER_TYPE: Type of the docker container used the run the build: e.g.,
 #                 (cpu | gpu)
+
+# BASE_IMAGE:  vitis-ai docker image which tvm will base on: e.g.  xdock.xilinx.com/vitis-ai-cpu:1.2.81  
+#              or xdock.xilinx.com/vitis-ai=cpu:dev_1.3.34
+# VERSION:     tvm docker image version: default is: latest 
 #
 # DOCKERFILE_PATH: (Optional) Path to the Dockerfile used for docker build.  If
 #                  this optional value is not supplied (via the --dockerfile
@@ -41,12 +45,13 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 CONTAINER_TYPE=$( echo "$1" | tr '[:upper:]' '[:lower:]' )
 #shift 1
 
-VERSION=$2
+BASE_IMAGE=$2
+VERSION=$3
 
-if [ "$#" -gt  2 ] ; then
-    shift 2
+if [ "$#" -gt  3 ] ; then
+    shift 3
 else
-    shift 1
+    shift 2
 fi
 
 # Dockerfile to be used in docker build
@@ -121,10 +126,10 @@ function upsearch () {
 # Set up WORKSPACE and BUILD_TAG. Jenkins will set them for you or we pick
 # reasonable defaults if you run it outside of Jenkins.
 WORKSPACE="${WORKSPACE:-${SCRIPT_DIR}/../}"
-BUILD_TAG="${BUILD_TAG:-tvm}"
+BUILD_TAG="${DOCKER_BUILD_TAG:-xilinx:5000/tvm}"
 
 # Determine the docker image name
-DOCKER_IMG_NAME="${BUILD_TAG}.${CONTAINER_TYPE}"
+DOCKER_IMG_NAME="${BUILD_TAG}.${CONTAINER_TYPE}:${VERSION}"
 
 # Under Jenkins matrix build, the build tag may contain characters such as
 # commas (,) and equal signs (=), which are not valid inside docker image names.
@@ -147,7 +152,7 @@ echo ""
 # Build the docker container.
 echo "Building container (${DOCKER_IMG_NAME})..."
 
-docker build --build-arg VERSION=$VERSION  -t ${DOCKER_IMG_NAME} \
+docker build --build-arg BASE_IMAGE=${BASE_IMAGE}  -t ${DOCKER_IMG_NAME} \
     -f "${DOCKERFILE_PATH}" \
     ${CI_DOCKER_BUILD_EXTRA_PARAMS[@]} \
     "${DOCKER_CONTEXT_PATH}"
