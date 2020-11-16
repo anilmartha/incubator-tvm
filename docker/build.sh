@@ -126,7 +126,7 @@ function upsearch () {
 # Set up WORKSPACE and BUILD_TAG. Jenkins will set them for you or we pick
 # reasonable defaults if you run it outside of Jenkins.
 WORKSPACE="${WORKSPACE:-${SCRIPT_DIR}/../}"
-BUILD_TAG="${DOCKER_BUILD_TAG:-xilinx:5000/tvm}"
+BUILD_TAG="${DOCKER_BUILD_TAG:-xdock:5000/tvm}"
 
 # Determine the docker image name
 DOCKER_IMG_NAME="${BUILD_TAG}.${CONTAINER_TYPE}:${VERSION}"
