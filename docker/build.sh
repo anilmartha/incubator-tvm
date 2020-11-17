@@ -126,7 +126,7 @@ function upsearch () {
 # Set up WORKSPACE and BUILD_TAG. Jenkins will set them for you or we pick
 # reasonable defaults if you run it outside of Jenkins.
 WORKSPACE="${WORKSPACE:-${SCRIPT_DIR}/../}"
-BUILD_TAG="${DOCKER_BUILD_TAG:-xilinx:5000/tvm}"
+BUILD_TAG="${DOCKER_BUILD_TAG:-xdock:5000/tvm}"
 
 # Determine the docker image name
 DOCKER_IMG_NAME="${BUILD_TAG}.${CONTAINER_TYPE}:${VERSION}"
@@ -162,25 +162,3 @@ if [[ $? != "0" ]]; then
     echo "ERROR: docker build failed."
     exit 1
 fi
-
-# Run the command inside the container.
-echo "Running '${COMMAND[@]}' inside ${DOCKER_IMG_NAME}..."
-
-# By default we cleanup - remove the container once it finish running (--rm)
-# and share the PID namespace (--pid=host) so the process inside does not have
-# pid 1 and SIGKILL is propagated to the process inside (jenkins can kill it).
-echo ${DOCKER_BINARY}
-${DOCKER_BINARY} run --rm --pid=host \
-    -v ${WORKSPACE}:/workspace \
-    -w /workspace \
-    -e "CI_BUILD_HOME=/workspace" \
-    -e "CI_BUILD_USER=$(id -u -n)" \
-    -e "CI_BUILD_UID=$(id -u)" \
-    -e "CI_BUILD_GROUP=$(id -g -n)" \
-    -e "CI_BUILD_GID=$(id -g)" \
-    -e "CI_PYTEST_ADD_OPTIONS=$CI_PYTEST_ADD_OPTIONS" \
-    ${CUDA_ENV}\
-    ${CI_DOCKER_EXTRA_PARAMS[@]} \
-    ${DOCKER_IMG_NAME} \
-    bash --login docker/with_the_same_user \
-    ${COMMAND[@]}
