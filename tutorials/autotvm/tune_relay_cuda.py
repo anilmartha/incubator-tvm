@@ -15,7 +15,7 @@
 # specific language governing permissions and limitations
 # under the License.
 """
-Auto-tuning a convolutional network for NVIDIA GPU
+Auto-tuning a Convolutional Network for NVIDIA GPU
 ==================================================
 **Author**: `Lianmin Zheng <https://github.com/merrymercy>`_, `Eddie Yan <https://github.com/eqy/>`_
 
@@ -31,7 +31,7 @@ the best knob values for all required operators. When the TVM compiler compiles
 these operators, it will query this log file to get the best knob values.
 
 We also released pre-tuned parameters for some NVIDIA GPUs. You can go to
-`NVIDIA GPU Benchmark <https://github.com/apache/incubator-tvm/wiki/Benchmark#nvidia-gpu>`_
+`NVIDIA GPU Benchmark <https://github.com/apache/tvm/wiki/Benchmark#nvidia-gpu>`_
 to see the results.
 
 Note that this tutorial will not run on Windows or recent versions of macOS. To
@@ -47,7 +47,7 @@ __name__ == "__main__":` block.
 #
 # .. code-block:: bash
 #
-#   pip3 install --user psutil xgboost tornado
+#   pip3 install --user psutil xgboost tornado cloudpickle
 #
 # To make TVM run faster during tuning, it is recommended to use cython
 # as FFI of tvm. In the root directory of tvm, execute:
@@ -64,12 +64,9 @@ import os
 import numpy as np
 
 import tvm
-from tvm import te
-from tvm import autotvm
-from tvm import relay
+from tvm import relay, autotvm
 import tvm.relay.testing
 from tvm.autotvm.tuner import XGBTuner, GATuner, RandomTuner, GridSearchTuner
-from tvm.contrib.utils import tempdir
 import tvm.contrib.graph_runtime as runtime
 
 #################################################################
@@ -102,7 +99,7 @@ def get_network(name, batch_size):
             batch_size=batch_size, version="1.1", dtype=dtype
         )
     elif name == "inception_v3":
-        input_shape = (1, 3, 299, 299)
+        input_shape = (batch_size, 3, 299, 299)
         mod, params = relay.testing.inception_v3.get_workload(batch_size=batch_size, dtype=dtype)
     elif name == "mxnet":
         # an example for mxnet model
@@ -239,11 +236,6 @@ def tune_and_evaluate(tuning_opt):
         with tvm.transform.PassContext(opt_level=3):
             lib = relay.build_module.build(mod, target=target, params=params)
 
-        # export library
-        tmp = tempdir()
-        filename = "net.tar"
-        lib.export_library(tmp.relpath(filename))
-
         # load parameters
         ctx = tvm.context(str(target), 0)
         module = runtime.GraphModule(lib["default"](ctx))
@@ -323,6 +315,7 @@ def tune_and_evaluate(tuning_opt):
 #################################################################
 # Scale up measurement by using multiple devices
 # ----------------------------------------------
+# .. _tutorials-autotvm-rpc-tracker:
 #
 # If you have multiple devices, you can use all of them for measurement.
 # TVM uses the RPC Tracker to manage distributed devices.

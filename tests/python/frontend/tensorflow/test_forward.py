@@ -1794,9 +1794,11 @@ def test_forward_sparse_dense_matmul():
     #
     # ------------------------------------------------------------------
 
-    # TODO(ANSHUMAN87): False case for flip need to be supported
-    # _test_sparse_dense_matmul([[0, 0], [1, 2]], [4.0, 8.0], [3, 4], [4, 3], "float32")
-    _test_sparse_dense_matmul([[0, 0], [1, 2]], [4.0, 8.0], [3, 5], [4, 3], "float32", True)
+    _test_sparse_dense_matmul([[0, 0], [1, 2]], [4.0, 8.0], [3, 4], [4, 3], "float32")
+    _test_sparse_dense_matmul([[0, 0], [1, 2]], [4.0, 8.0], [3, 3], [3, 3], "float32")
+    _test_sparse_dense_matmul([[0, 0], [1, 3], [4, 3]], [3.0, 6.0, 9.0], [5, 5], [5, 5], "float32")
+    _test_sparse_dense_matmul([[0, 0], [1, 3], [4, 3]], [3.0, 6.0, 9.0], [7, 9], [9, 5], "float32")
+    _test_sparse_dense_matmul([[0, 0], [1, 2]], [4.0, 8.0], [4, 3], [3, 4], "float32", True)
     _test_sparse_dense_matmul([[0, 0], [1, 2]], [4.0, 8.0], [3, 3], [3, 3], "float32", True)
     _test_sparse_dense_matmul(
         [[0, 0], [1, 3], [4, 3]], [3.0, 6.0, 9.0], [5, 5], [5, 5], "float32", True
@@ -2647,9 +2649,35 @@ def _test_forward_nms_v4(
     )
 
 
+def _test_forward_nms_v5(
+    bx_shape, score_shape, iou_threshold, score_threshold, out_size, dtype="float32"
+):
+    boxes = np.random.uniform(0, 10, size=bx_shape).astype(dtype)
+    scores = np.random.uniform(size=score_shape).astype(dtype)
+    max_output_size = np.int32(out_size)
+    tf.reset_default_graph()
+    in_data_1 = tf.placeholder(dtype, boxes.shape, name="in_data_1")
+    in_data_2 = tf.placeholder(dtype, scores.shape, name="in_data_2")
+    in_data_3 = tf.placeholder(tf.int32, name="in_data_3")
+    tf.image.non_max_suppression_with_scores(
+        boxes=in_data_1,
+        scores=in_data_2,
+        max_output_size=in_data_3,
+        iou_threshold=iou_threshold,
+        score_threshold=score_threshold,
+        name="nms",
+    )
+    compare_tf_with_tvm(
+        [boxes, scores, max_output_size],
+        ["in_data_1:0", "in_data_2:0", "in_data_3:0"],
+        ["nms/NonMaxSuppressionV5:0", "nms/NonMaxSuppressionV5:1"],
+        mode="vm",
+    )
+
+
 def test_forward_nms():
-    """ NonMaxSuppressionV3,4 """
-    for _test_forward_nms in [_test_forward_nms_v3]:
+    """ NonMaxSuppressionV3,5 """
+    for _test_forward_nms in [_test_forward_nms_v3, _test_forward_nms_v5]:
         _test_forward_nms((5, 4), (5,), 0.7, 0.5, 5)
         _test_forward_nms((20, 4), (20,), 0.5, 0.6, 10)
         _test_forward_nms((1000, 4), (1000,), 0.3, 0.7, 1000)
@@ -2768,10 +2796,11 @@ def test_forward_unpack():
 
 def test_forward_range():
     """test operator Range"""
-    tf.reset_default_graph()
-    with tf.Graph().as_default():
-        tf.range(1, 18, 3, name="range")
-        compare_tf_with_tvm([], [], "range:0")
+    for dtype in [tf.int32, tf.int64]:
+        tf.reset_default_graph()
+        with tf.Graph().as_default():
+            tf.range(1, 18, 3, name="range", dtype=dtype)
+            compare_tf_with_tvm([], [], "range:0")
 
     """test type assignment for operator Range"""
     tf.reset_default_graph()
@@ -3584,6 +3613,23 @@ def test_forward_softsign():
     _test_forward_softsign([1, 100])
     _test_forward_softsign([1, 10, 10])
     _test_forward_softsign([2, 5, 2, 5])
+
+
+def test_forward_rint():
+    """test operator rint """
+
+    def _test_forward_rint(shape):
+        tf.disable_eager_execution()
+        np_data = np.random.uniform(-100, 100, size=shape).astype(np.float32)
+        tf.reset_default_graph()
+        in_data = tf.placeholder(tf.float32, shape, name="in_data")
+        tf.math.rint(in_data, name="rint")
+        compare_tf_with_tvm([np_data], ["in_data:0"], "rint:0")
+
+    _test_forward_rint([100])
+    _test_forward_rint([1, 100])
+    _test_forward_rint([1, 10, 10])
+    _test_forward_rint([2, 5, 2, 5])
 
 
 def test_forward_negative():

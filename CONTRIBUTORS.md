@@ -40,6 +40,8 @@ We add tag along with committer name to show areas that they are familiar with.
 We do encourage everyone to work anything they are interested in.
 
 - [Aditya Atluri](https://github.com/adityaatluri): @adityaatluri - rocm
+- [Matthew Barrett](https://github.com/mbaret): @mbaret - byoc, arm
+- [Matthew Brookhart](https://github.com/mbrookhart): @mbrookhart - relay, frontends
 - [Tianqi Chen](https://github.com/tqchen) (PPMC): @tqchen - topi, compiler, relay, docs
 - [Liangfu Chen](https://github.com/liangfu): @liangfu - vta, chisel, intel FPGA, c runtime
 - [Wei Chen](https://github.com/wweic): @wweic - runtime, relay, vm
@@ -76,7 +78,6 @@ We do encourage everyone to work anything they are interested in.
 
 - [Aditya Atluri](https://github.com/adityaatluri): @adityaatluri
 - [Matthew Barrett](https://github.com/mbaret): @mbaret
-- [Luke Hutton](https://github.com/lhutton1): @lhutton1
 - [Arnaud Bergeron](https://github.com/abergeron): @abergeron
 - [Matthew Brookhart](https://github.com/mbrookhart): @mbrookhart
 - [Tianqi Chen](https://github.com/tqchen): @tqchen
@@ -91,11 +92,12 @@ We do encourage everyone to work anything they are interested in.
 - [Hao Lu](https://github.com/hlu1): @hlu1
 - [Nick Hynes](https://github.com/nhynes): @nhynes
 - [Yuwei Hu](https://github.com/Huyuwei): @Huyuwei
+- [Luke Hutton](https://github.com/lhutton1): @lhutton1
 - [Animesh Jain](https://github.com/anijain2305): @anijain2305
 - [Hua Jiang](https://github.com/huajsj): @huajsj
+- [Leandro Nunes](https://github.com/leandron): @leandron
 - [Yizhi Liu](https://github.com/yzhliu) : @yzhliu
 - [Zhixun Tan](https://github.com/phisiart): @phisiart
-- [Zhi Chen](https://github.com/zhiics): @zhiics
 - [Xiaoqiang Dan](https://github.com/xqdan): @xqdan
 - [Ziheng Jiang](https://github.com/ZihengJiang): @ZihengJiang
 - [Marisa Kirisame](https://github.com/MarisaKirisame): @MarisaKirisame
@@ -137,7 +139,7 @@ We do encourage everyone to work anything they are interested in.
 - [Lianmin Zheng](https://github.com/merrymercy): @merrymercy
 
 ## List of Contributors
-- [Full List of Contributors](https://github.com/apache/incubator-tvm/graphs/contributors)
+- [Full List of Contributors](https://github.com/apache/tvm/graphs/contributors)
   - To contributors: please add your name to the list.
 - [Qiao Zhang](https://github.com/zhangqiaorjc)
 - [Haolong Zhang](https://github.com/haolongzhangm)
