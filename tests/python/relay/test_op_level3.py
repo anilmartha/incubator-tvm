@@ -316,17 +316,45 @@ def test_reshape_like_infer_type():
     zz = run_infer_type(z)
     assert zz.checked_type == relay.TensorType((1, 8, 8), "float32")
 
+    # partial reshaping
+    x = relay.var("x", relay.TensorType((1, 2, 3, 4), "float32"))
+    y = relay.var("y", relay.TensorType((1, 6, 5), "float32"))
+    z = relay.reshape_like(x, y, lhs_begin=1, lhs_end=3, rhs_begin=1, rhs_end=2)
+    zz = run_infer_type(z)
+    assert zz.checked_type == relay.TensorType((1, 6, 4), "float32")
+
+    x = relay.var("x", relay.TensorType((1, 2, 3, 4), "float32"))
+    y = relay.var("y", relay.TensorType((2, 3, 4, 1, 6), "float32"))
+    z = relay.reshape_like(x, y, rhs_end=3)
+    zz = run_infer_type(z)
+    assert zz.checked_type == relay.TensorType((2, 3, 4), "float32")
+    z = relay.reshape_like(x, y, rhs_begin=2)
+    zz = run_infer_type(z)
+    assert zz.checked_type == relay.TensorType((4, 1, 6), "float32")
+
+    # symbolic partial reshaping
+    n, c, h, w = te.size_var("n"), 2, 3, te.size_var("w")
+    x = relay.var("x", relay.TensorType((n, c, h, w), "float32"))
+    y = relay.var("y", relay.TensorType((5, 6), "float32"))
+    z = relay.var("z", relay.TensorType((4,), "float32"))
+    w = relay.reshape_like(x, y, lhs_end=3)
+    w = relay.reshape_like(w, z, lhs_begin=2)
+    w = run_infer_type(w)
+    assert w.checked_type == relay.TensorType((5, 6, 4), "float32")
+
 
 @tvm.testing.uses_gpu
 def test_reshape_like():
-    def verify_reshape_like(shape, oshape):
+    def verify_reshape_like(shape, oshape, shape_like=None, reshape_like_kwargs={}):
+        if shape_like is None:
+            shape_like = oshape
         x_data = np.random.uniform(low=-1, high=1, size=shape).astype("float32")
-        y_data = np.random.uniform(low=-1, high=1, size=oshape).astype("float32")
-        ref_res = np.reshape(x_data, y_data.shape)
+        y_data = np.random.uniform(low=-1, high=1, size=shape_like).astype("float32")
+        ref_res = np.reshape(x_data, oshape)
 
         x = relay.var("x", relay.TensorType(shape, "float32"))
-        y = relay.var("x", relay.TensorType(oshape, "float32"))
-        z = relay.reshape_like(x, y)
+        y = relay.var("x", relay.TensorType(shape_like, "float32"))
+        z = relay.reshape_like(x, y, **reshape_like_kwargs)
         zz = run_infer_type(z)
         assert zz.checked_type == relay.ty.TensorType(ref_res.shape, "float32")
 
@@ -340,6 +368,9 @@ def test_reshape_like():
 
     verify_reshape_like((2, 3, 4), (1, 8, 3))
     verify_reshape_like((4, 7), (2, 7, 2))
+    verify_reshape_like(
+        (1, 2, 3, 4), (1, 6, 4), (1, 6, 5), dict(lhs_begin=1, lhs_end=3, rhs_begin=1, rhs_end=2)
+    )
 
 
 def test_take_infer_type():
@@ -961,6 +992,7 @@ def test_scatter():
     verify_dynamic_scatter((16, 16, 4, 5), (16, 16, 4, 5), 3)
 
 
+@tvm.testing.uses_gpu
 def test_scatter_add():
     def ref_scatter_add(data, indices, updates, axis=0):
         output = np.copy(data)
@@ -970,27 +1002,33 @@ def test_scatter_add():
             output[tuple(new_index)] += updates[index]
         return output
 
-    def verify_scatter_add(dshape, ishape, axis=0):
-        d = relay.var("d", relay.TensorType(dshape, "float32"))
+    def verify_scatter_add(dshape, ishape, axis=0, dtype="float32"):
+        d = relay.var("d", relay.TensorType(dshape, dtype))
         i = relay.var("i", relay.TensorType(ishape, "int64"))
-        u = relay.var("u", relay.TensorType(ishape, "float32"))
+        u = relay.var("u", relay.TensorType(ishape, dtype))
         z = relay.op.scatter_add(d, i, u, axis)
 
         func = relay.Function([d, i, u], z)
 
-        data_np = np.random.uniform(size=dshape).astype("float32")
-        updates_np = np.random.uniform(size=ishape).astype("float32")
+        data_np = np.random.uniform(size=dshape).astype(dtype)
+        updates_np = np.random.uniform(size=ishape).astype(dtype)
         indices_np = np.random.randint(-dshape[axis], dshape[axis] - 1, ishape).astype("int64")
 
         ref_res = ref_scatter_add(data_np, indices_np, updates_np, axis)
-        # TODO(mbrookhart): expand testing when adding more backend schedules
-        for target, ctx in [("llvm", tvm.cpu())]:
+        for target, ctx in tvm.testing.enabled_targets():
             for kind in ["graph", "debug"]:
+                if target == "nvptx" and dtype == "float32" and len(dshape) == 1:
+                    # scatter_add 1D on GPU is implemented via atomic.
+                    # Floating point atomic requires LLVM 9 or newer for nvptx backend.
+                    # But LLVM on CI is LLVM 8.
+                    continue
                 intrp = relay.create_executor(kind, ctx=ctx, target=target)
                 op_res = intrp.evaluate(func)(data_np, indices_np, updates_np)
                 tvm.testing.assert_allclose(op_res.asnumpy(), ref_res, rtol=1e-5)
 
-    verify_scatter_add((10,), (10,), 0)
+    verify_scatter_add((10,), (10,), 0, dtype="int32")
+    verify_scatter_add((1000,), (1000,))
+    verify_scatter_add((1000,), (1000,), 0, dtype="int32")
     verify_scatter_add((10, 5), (10, 5), -2)
     verify_scatter_add((10, 5), (10, 5), -1)
     verify_scatter_add((10, 5), (3, 5), 0)

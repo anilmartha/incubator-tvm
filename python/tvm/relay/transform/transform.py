@@ -173,10 +173,14 @@ def SimplifyInference():
     """Simplify the data-flow graph for inference phase. An simplified expression
     which is semantically equal to the input expression will be returned.
 
+    Note that batch norms will only be simplified if their result is indexed at
+    tuple index 0.
+
     Returns
     -------
     ret: tvm.transform.Pass
         The registered pass to perform operator simplification.
+
     """
     return _ffi_api.SimplifyInference()
 
@@ -262,6 +266,18 @@ def FuseOps(fuse_opt_level=-1):
         The registered pass for operator fusion.
     """
     return _ffi_api.FuseOps(fuse_opt_level)
+
+
+def DefuseOps():
+    """The inverse operation of FuseOps. It transforms a fused program returned by FuseOps into the
+    program before FuseOps. (i.e., x == DefuseOps(FuseOps(x)))
+
+    Returns
+    -------
+    ret : tvm.transform.Pass
+        The registered pass for operator defusion.
+    """
+    return _ffi_api.DefuseOps()
 
 
 def CombineParallelConv2D(min_num_branches=3):
