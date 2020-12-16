@@ -441,7 +441,7 @@ TVM.
    import tvm
    import tvm.relay as relay
    from tvm.contrib.target import vitis_ai
-   from tvm.contrib import util, graph_runtime
+   from tvm.contrib import utils, graph_runtime
    from tvm.relay.build_module import bind_params_by_name
    from tvm.relay.op.contrib.vitis_ai import annotation
 
@@ -541,7 +541,7 @@ TVM.
    import tvm
    import tvm.relay as relay
    from tvm.contrib.target import vitis_ai
-   from tvm.contrib import util, graph_runtime
+   from tvm.contrib import utils, graph_runtime
    from tvm.relay.build_module import bind_params_by_name
    from tvm.relay.op.contrib.vitis_ai import annotation
 
@@ -572,9 +572,9 @@ can be included.
 
 .. code:: python
 
-   from tvm.contrib import util
+   from tvm.contrib import utils
 
-   temp = util.tempdir()
+   temp = utils.tempdir()
 
    tvm_target = 'llvm'
    target='DPUCZDX8G-zcu104'
@@ -604,9 +604,9 @@ Save the TVM lib module so that the Vitis-AI runtime module will also be exporte
 
 .. code:: python
 
-   from tvm.contrib import util
+   from tvm.contrib import utils
 
-   temp = util.tempdir()
+   temp = utils.tempdir()
    lib.export_library(temp.relpath("tvm_lib.so"))
 
 After quantizing and compiling the model for Vitis-AI acceleration using the
