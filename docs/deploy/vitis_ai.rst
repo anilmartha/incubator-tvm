@@ -58,7 +58,7 @@ This section lists the instructions for building TVM with Vitis-AI for
 both `cloud <#cloud-dpucadx8g>`__ and `edge <#edge-dpuczdx8g>`__.
 
 Cloud (DPUCADX8G)
-~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~
 
 For Vitis-AI acceleration in the cloud TVM has to be built on top of the
 Xilinx Alveo platform.
@@ -390,7 +390,7 @@ quantize on-the-fly using the first N inputs as explained in the next
 section.
 
 On-the-fly quantization
-~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~
 
 Usually, to be able to accelerate inference of Neural Network models
 with Vitis-AI DPU accelerators, those models need to quantized upfront.
@@ -408,7 +408,7 @@ deployment. Please check out the `edge <#Edge%20usage>`__ usage
 instructions below for more information.
 
 Config/Settings
-~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~
 
 A couple of environment variables can be used to customize the Vitis-AI
 Byoc flow.
@@ -422,7 +422,7 @@ Byoc flow.
 +----------------------------+----------------------------------------+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
 
 Cloud usage
-~~~~~~~~~~
+~~~~~~~~~~~
 
 This section shows how to accelerate a convolutional neural network
 model in TVM with Vitis-AI on the cloud.
@@ -517,7 +517,7 @@ Load the module from compiled files and run inference
    module.run()
 
 Edge usage
-~~~~~~~~~
+~~~~~~~~~~
 
 This section shows how to accelerate a convolutional neural network
 model in TVM with Vitis-AI at the edge. The first couple of steps will
