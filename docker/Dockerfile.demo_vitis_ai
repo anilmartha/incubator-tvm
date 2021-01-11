@@ -58,7 +58,8 @@ RUN git clone --recursive https://github.com/Xilinx/pyxir.git --branch dev-lrelu
     python3 setup.py install --use_vai_rt_dpucadx8g
 
 # Install TVM
-RUN git clone --recursive https://github.com/apache/incubator-tvm.git && \
+#RUN git clone --recursive https://github.com/apache/incubator-tvm.git && \
+RUN git clone --recursive https://github.com/anilmartha/incubator-tvm.git --branch vitis-ai-fix-out-tensors-order && \
     mkdir -p incubator-tvm/build && \
 	source /opt/xilinx/xrt/setup.sh && \
     cp incubator-tvm/cmake/config.cmake incubator-tvm/build/ && \
