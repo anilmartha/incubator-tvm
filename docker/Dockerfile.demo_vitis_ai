@@ -52,7 +52,7 @@ RUN . $VAI_ROOT/conda/etc/profile.d/conda.sh && \
 RUN mkdir /build && chmod 0777 /build
 WORKDIR /build
 SHELL ["/opt/vitis_ai/conda/bin/conda", "run", "-n", "vitis-ai-tensorflow", "/bin/bash", "-c"]
-RUN git clone --recursive https://github.com/Xilinx/pyxir.git --branch dev && \
+RUN git clone --recursive https://github.com/Xilinx/pyxir.git --branch dev-lrelu-pattern && \
     cd pyxir && \
     source /opt/xilinx/xrt/setup.sh && \
     python3 setup.py install --use_vai_rt_dpucadx8g
