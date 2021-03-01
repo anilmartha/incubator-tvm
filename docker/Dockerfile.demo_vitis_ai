@@ -70,7 +70,8 @@ RUN git clone --recursive https://github.com/apache/incubator-tvm.git && \
     cmake .. && \
     make -j$(nproc) && \
     cd ../python/ && \
-    sudo -H python3 -m pip install --install-option="--install-scripts=/usr/local/bin" tvm
+    pip3 install -e .
+ #sudo -H python3 -m pip install --install-option="--install-scripts=/usr/local/bin" tvm
 
 ENV USER="root"
 
